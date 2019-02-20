@@ -54,7 +54,7 @@ gains_lift %>%
 
 ### function to plot gains, lift and response charts of the best model
 
-lift4gains <- function(H2OAutoML_object, response_ref = NULL) {
+lift4gains <- function(H2OAutoML_object, response_ref = NULL, save_pngs = F) {
   
   model <- as.vector(as.character(H2OAutoML_object@leaderboard$model_id))[1]
   
@@ -70,7 +70,11 @@ lift4gains <- function(H2OAutoML_object, response_ref = NULL) {
             subtitle = "When we apply the model and select x % of customers,\nwhat % of the target class observations can we expect to hit?") +
     theme(plot.title = element_text(size = 16),
           plot.subtitle = element_text(size = 14, face = "italic",vjust=-1))
+  
   print(p1)
+  if (save_pngs == T) {
+    ggsave("gains.png")
+  }
   
   # Lift 
   p2 <- df %>%
@@ -82,7 +86,11 @@ lift4gains <- function(H2OAutoML_object, response_ref = NULL) {
             subtitle = "When we apply the model and select x % of customers,\nhow many times better is that than using no model?") +
     theme(plot.title = element_text(size = 16),
           plot.subtitle = element_text(size = 14, face = "italic",vjust=-1))
+  
   print(p2)
+  if (save_pngs == T) {
+    ggsave("lift.png")
+  }
   
   # Response
   p3 <- df %>%
@@ -100,6 +108,9 @@ lift4gains <- function(H2OAutoML_object, response_ref = NULL) {
   }
   
   print(p3)
+  if (save_pngs == T) {
+    ggsave("response.png")
+  }
 }
 
 
