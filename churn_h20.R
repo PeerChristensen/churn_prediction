@@ -119,7 +119,7 @@ aml <- h2o.automl(x = features,
                   training_frame = train_hf,
                   validation_frame = valid_hf,
                   balance_classes = TRUE,
-                  max_runtime_secs = 360)
+                  max_runtime_secs = 60)
 
 # View the AutoML Leaderboard
 lb <- aml@leaderboard
@@ -280,12 +280,14 @@ explanation %>%
 library(modelplotr)
 ## Package modelplotr loaded! Happy model plotting!
 
+# FIGURE OUT HOW TO PLOT MODELS FROM H2O
+
 # transform datasets and model objects into scored data and calculate deciles 
-prepare_scores_and_deciles(datasets=list("train","test"),
+prepare_scores_and_deciles(datasets=list("train_hf","test_hf"),
                            dataset_labels = list("train data","test data"),
-                           models = list("rf","mnl","xgb","lda"),
-                           model_labels = list("random forest","multinomial logit","XGBoost","Discriminant"),
-                           target_column="y")
+                           models = list(best_model@parameters$model_id),
+                           model_labels = list("StackedEnsemble"),
+                           target_column="Churn")
 
 plotting_scope(select_model_label = 'XGBoost',select_dataset_label = 'test data')
 
