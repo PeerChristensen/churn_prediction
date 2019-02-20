@@ -119,7 +119,7 @@ aml <- h2o.automl(x = features,
                   training_frame = train_hf,
                   validation_frame = valid_hf,
                   balance_classes = TRUE,
-                  max_runtime_secs = 60)
+                  max_runtime_secs = 1000)
 
 # View the AutoML Leaderboard
 lb <- aml@leaderboard
@@ -182,7 +182,6 @@ finalRf_predictions %>%
 finalRf_predictions %>%
   group_by(actual, predict_stringent) %>%
   dplyr::summarise(n = n())
-
 
 
 finalRf_predictions %>%

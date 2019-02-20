@@ -1,5 +1,5 @@
 # simple
-myL <- as.vector(as.character(aml@leaderboard$model_id))[3]
+myL <- as.vector(as.character(aml@leaderboard$model_id))[2]
 
 h2o.getModel(myL) %>%
   h2o.performance(valid=T) %>%
@@ -11,26 +11,27 @@ h2o.getModel(myL) %>%
   geom_segment(aes(x=0,y=0,xend = 1, yend = 1),linetype = 2,col='grey')+
   xlab('False Positive Rate')+
   ylab('True Positive Rate')+
-  ggtitle('ROC Curve for Four Models')
+  ggtitle('ROC Curve')
 
 ###### all models ######
 
 models <- as.vector(as.character(aml@leaderboard$model_id)) %>% map(h2o.getModel)
 
 df <- tibble()
+
 for (i in 1:length(models)) {
   
-  perf <- h2o.performance(models[[i]])
+  perf <- h2o.performance(models[[i]],test_hf)
   tpr  <- perf@metrics$thresholds_and_metric_scores$tpr
   fpr  <- perf@metrics$thresholds_and_metric_scores$fpr
 
   model_id  <- models[[i]]@model_id
   algorithm <- models[[i]]@algorithm
-  
+
   d <- tibble(model_id,algorithm,tpr,fpr)
   d <- add_row(d,model_id = model_id, algorithm=algorithm,tpr=0,fpr=0,.before=T)
   d <- add_row(d,model_id = model_id, algorithm=algorithm,tpr=0,fpr=0,.before=F)
-
+  
   df <- rbind(df,d)
 }
 
@@ -48,6 +49,7 @@ df %>%
         plot.subtitle = element_text(size = 12,face="italic")) +
   scale_colour_viridis_d("Model")
 
+models_auc <- tibble(model = as.vector(aml@leaderboard$model_id),auc = as.vector(aml@leaderboard$auc))
 
 ### function for preparing ROC curves for plotting
 
@@ -60,7 +62,7 @@ roc_curves <- function(H2OAutoML_object, plot = F) {
   
   for (i in 1:length(models)) {
     
-    perf <- h2o.performance(models[[i]])
+    perf <- h2o.performance(models[[i]], test_hf)
     tpr  <- perf@metrics$thresholds_and_metric_scores$tpr
     fpr  <- perf@metrics$thresholds_and_metric_scores$fpr
     
