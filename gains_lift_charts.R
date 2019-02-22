@@ -11,7 +11,7 @@ gains_lift %>%
   ggplot(aes(x=cumulative_data_fraction,y=cumulative_capture_rate)) +
   geom_line(size = .8) +
   geom_point(size = 1) +
-  geom_segment(aes(x=0,y=0,xend = 1, yend = 1),size = 1,linetype = 2,col='grey')+
+  geom_segment(aes(x=0,y=0,xend = 1, yend = 1),size = 1,linetype = 2,col='grey') +
   ggtitle("Gains chart",
           subtitle = "When we apply the model and select x % of customers,\nwhat % of the target class observations can we expect to hit?") +
   theme(plot.title = element_text(size = 16),
@@ -68,6 +68,8 @@ lift4gains <- function(H2OAutoML_object, response_ref = NULL, save_pngs = F) {
     geom_segment(aes(x=0,y=0,xend = 1, yend = 1),size = 1,linetype = 2,col='grey')+
     ggtitle("Gains chart",
             subtitle = "When we apply the model and select x % of customers,\nwhat % of the target class observations can we expect to hit?") +
+    labs(x = "Data fraction",
+         y = "Cumulative gains") +
     theme(plot.title = element_text(size = 16),
           plot.subtitle = element_text(size = 14, face = "italic",vjust=-1))
   
@@ -84,6 +86,8 @@ lift4gains <- function(H2OAutoML_object, response_ref = NULL, save_pngs = F) {
     geom_segment(aes(x=0,y=1,xend = 1, yend = 1),size = 1,linetype = 2,col='grey')+
     ggtitle("Lift chart",
             subtitle = "When we apply the model and select x % of customers,\nhow many times better is that than using no model?") +
+    labs(x = "Data fraction",
+         y = "Cumulative lift") +
     theme(plot.title = element_text(size = 16),
           plot.subtitle = element_text(size = 14, face = "italic",vjust=-1))
   
@@ -100,6 +104,8 @@ lift4gains <- function(H2OAutoML_object, response_ref = NULL, save_pngs = F) {
     ylim(c(0,1)) +
     ggtitle("Response chart",
             subtitle = "When we apply the model and select x % of customers, \nwhat is the expected % of target class observations in the selection?") +
+    labs(x = "Data fraction",
+         y = "Cumulative response") +
     theme(plot.title = element_text(size = 16),
           plot.subtitle = element_text(size = 14, face = "italic",vjust=-1))
   

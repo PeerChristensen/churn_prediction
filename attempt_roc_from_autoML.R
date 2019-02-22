@@ -76,6 +76,9 @@ roc_curves <- function(H2OAutoML_object, plot = F) {
     df <- rbind(df,d)
   }
   
+  df$model_id <- str_split(df$model_id, "_AutoML") %>%
+    map_chr(1)
+  
   if (plot == T) {
     p <- df %>% 
       ggplot(aes(fpr,tpr,colour = model_id)) + 
