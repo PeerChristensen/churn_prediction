@@ -53,11 +53,17 @@ models_auc <- tibble(model = as.vector(aml@leaderboard$model_id),auc = as.vector
 
 ### function for preparing ROC curves for plotting
 
-roc_curves <- function(H2OAutoML_object, plot = F) {
+roc_curves <- function(H2OAutoML_object, plot = T, best = F, save_png = F) {
   
-  models <- as.vector(as.character(H2OAutoML_object@leaderboard$model_id)) %>% 
-    map(h2o.getModel)
-
+  if (best == T) {
+    models <- as.vector(as.character(H2OAutoML_object@leader@model_id)) %>% 
+      map(h2o.getModel)
+  } 
+  else {
+    models <- as.vector(as.character(H2OAutoML_object@leaderboard$model_id)) %>% 
+      map(h2o.getModel)
+  }
+  
   df <- tibble()
   
   for (i in 1:length(models)) {
@@ -72,12 +78,13 @@ roc_curves <- function(H2OAutoML_object, plot = F) {
     d <- tibble(model_id,algorithm,tpr,fpr)
     d <- add_row(d,model_id = model_id, algorithm=algorithm,tpr=0,fpr=0,.before=T)
     d <- add_row(d,model_id = model_id, algorithm=algorithm,tpr=0,fpr=0,.before=F)
+    d <- add_column(d, model_rank = i)
     
     df <- rbind(df,d)
   }
   
   df$model_id <- str_split(df$model_id, "_AutoML") %>%
-    map_chr(1)
+    map_chr(1) %>%paste0(df$model_rank,": ",.)
   
   if (plot == T) {
     p <- df %>% 
@@ -87,14 +94,17 @@ roc_curves <- function(H2OAutoML_object, plot = F) {
       coord_fixed() +
       xlab('False Positive Rate') +
       ylab('True Positive Rate') +
-      ggtitle('ROC-kurver',
-              subtitle = "Sammenligning af de bedste modeller") +
-      theme_light() +
+      ggtitle('ROC curves',
+              subtitle = "Comparison of the best models") +
       theme(plot.title    = element_text(size = 16),
-            plot.subtitle = element_text(size = 12,face="italic")) +
-      scale_colour_viridis_d("Model")
+            plot.subtitle = element_text(size = 12,face="italic",vjust=-1)) +
+      scale_colour_viridis_d("Models")
     
     print(p)
+    
+    if (save_png == T) {
+      ggsave("auc_bars.png")
+    }
     
     return(df)
     
