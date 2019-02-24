@@ -26,7 +26,7 @@ gains_lift %>%
 ggtitle("Lift chart",
           subtitle = "When we apply the model and select x % of customers,\nhow many times better is that than using no model?") +
   theme(plot.title = element_text(size = 16),
-        plot.subtitle = element_text(size = 14, face = "italic",vjust=-1))
+        plot.subtitle = element_text(size = 12, face = "italic",vjust=-1))
  
 # Response
 prop_target <- prop.table(table(df$Churn))[2]
@@ -40,7 +40,7 @@ gains_lift %>%
   ggtitle("Response chart",
           subtitle = "When we apply the model and select x % of customers, \nwhat is the expected % of target class observations in the selection?") +
   theme(plot.title = element_text(size = 16),
-        plot.subtitle = element_text(size = 14, face = "italic",vjust=-1))
+        plot.subtitle = element_text(size = 12, face = "italic",vjust=-1))
 
 # combining plots
 gains_lift %>% 
@@ -71,7 +71,7 @@ lift4gains <- function(H2OAutoML_object, response_ref = NULL, save_pngs = F) {
     labs(x = "Data fraction",
          y = "Cumulative gains") +
     theme(plot.title = element_text(size = 16),
-          plot.subtitle = element_text(size = 14, face = "italic",vjust=-1))
+          plot.subtitle = element_text(size = 12, face = "italic",vjust=-1))
   
   print(p1)
   if (save_pngs == T) {
