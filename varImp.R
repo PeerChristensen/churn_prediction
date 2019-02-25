@@ -1,11 +1,9 @@
 # variable importance
 
-varImp_plot <- function(H2OAutoML_object) {
+varImp_plot <- function(H2OAutoML_object, save_pngs = F, return_data = F) {
   
   model <- as.vector(as.character(H2OAutoML_object@leaderboard$model_id)) %>% 
     map(h2o.getModel) %>% .[[1]]
-  
-  print(model@algorithm == "stackedensemble")
   
   if (model@algorithm == "stackedensemble") {
     print("Ensemble model: Plotting Model importance and Variable importances of model with highest importance")
@@ -13,6 +11,9 @@ varImp_plot <- function(H2OAutoML_object) {
     
     # plot model importance using H2O
     h2o.varimp_plot(metalearner)
+    if (save_pngs == T) {
+      ggsave("modelImp.png")
+    }
     
     # VarImp of most important model
     modelImp <- h2o.varimp(metaLearner) # data frame
@@ -25,10 +26,13 @@ varImp_plot <- function(H2OAutoML_object) {
     varImp <- h2o.varimp(model)
   }
     h2o.varimp_plot(model)
-  
-    #Variable   <- varImp[,1]
-    #Importance <- varImp[,2]
-    #df <- tibble(Variable,Importance)
+    if (save_pngs == T) {
+      ggsave("varImp.png")
+    }
+    
+    if (return_data == T) {
+      return(list(modelImp,varImp))
+    }
 }
 
 
