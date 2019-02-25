@@ -30,10 +30,14 @@ p <- df %>%
   geom_col() +
   xlab('Models') +
   ylab('AUC') +
-  scale_fill_viridis_d(guide=F) +
+  scale_fill_viridis_d(guide=F) + 
+  geom_text(aes(label=round(auc,3)), position=position_dodge(width=0.9), vjust=-0.9, size = 6) +
   ggtitle('AUC of the best models') +
-  theme(plot.title    = element_text(size = 16)) +
-  scale_colour_viridis_d(F) +
+  theme(plot.title = element_text(size = 16),
+        axis.title = element_text(size = 12),
+        axis.text.x  = element_text(size = 12,angle = 45, hjust = 1)) +
+        axis.text.y  = element_text(size = 12)) +
+  
   ylim(c(0,1))
 
 print(p)
