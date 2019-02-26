@@ -60,7 +60,7 @@ df <- df %>%
 md.pattern(df, plot = T)
 
 # impute missing data
-imp <- mice(data = df,  print = FALSE)
+imp <- mice(data = df,  print = TRUE)
 train_data_impute <- complete(imp, "long")
 
 # or drop
@@ -119,7 +119,7 @@ aml <- h2o.automl(x = features,
                   training_frame = train_hf,
                   validation_frame = valid_hf,
                   balance_classes = TRUE,
-                  max_runtime_secs = 10)
+                  max_runtime_secs = 20)
 
 # View the AutoML Leaderboard
 lb <- aml@leaderboard
