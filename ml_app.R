@@ -3,12 +3,31 @@ library(tidyverse)
 library(caret)
 library(mice)
 library(lubridate)
+library(varhandle)
 
 df <- read_csv("Telecom_customer_churn.csv")
 
+# just for testing
 df <- df %>% sample_frac(.3) %>% select(-Customer_ID)
 
+na_cols <- df %>% map(is.na) %>% map(sum) %>% unlist() %>% 
+  tibble(names(.)) %>% filter(. > 10) %>% select('names(.)') %>% sample_n(20)
+
+na_cols = na_cols$`names(.)`
+
+df = data.frame(df[,na_cols], churn = df$churn)
+
 ############### Detect, change, remove variables by type ###############
+
+# change to numeric
+df <- lapply(df, function(col) {
+  
+  if (suppressWarnings(all(!is.na(as.numeric(as.character(col)))))) {
+    as.numeric(as.character(col))
+  } else {
+    col
+    }
+})
 
 # change variables with < 50 levels to factor
 df <- df %>% mutate_if(~n_distinct(.[]) < 50, factor)
@@ -19,7 +38,19 @@ df <- df %>% mutate_if(is.character, as.factor)
 # remove datetime columns
 df <- df %>% select_if(function(x) !is.Date(x))
 
-############### Remove outliers #########################################
+############### Remove correlated variables ##############################
+
+#correlations <- preProcess(df, method=c("corr"))
+
+if (df %>% map(is.numeric) %>% unlist() %>% sum() > 1) {
+  remove_cor <- df %>% 
+    select_if(is.numeric) %>% 
+    drop_na() %>% 
+    cor() %>% 
+    findCorrelation(cutoff = .95)
+  
+  df <- df %>% select(-remove_cor)
+}
 
 ############### Impute data #############################################
 
@@ -27,27 +58,38 @@ df <- df %>% select_if(function(x) !is.Date(x))
 df %>% map(is.na) %>% map(sum) %>% unlist()
 
 imp <- mice(data = df, print = TRUE,maxit=2) # default maxit is 5, make sure cust id is removed
-df <- complete(imp, "long")
+df_impute <- complete(imp, "long")
+df_impute <- df_impute %>% select(-.imp,-.id)
+
+
+############### Partition data #########################################
+
+# split
+set.seed(42)
+index <- createDataPartition(df$churn, p = 0.7, list = FALSE)
+
+train_data <- df_impute[index, ] # only impute values in training data
+test_data  <- df[-index, ]
+
+index2 <- createDataPartition(test_data$churn, p = 0.5, list = FALSE)
+
+valid_data <- test_data[-index2, ]
+test_data <- test_data[index2, ]
+
+############### Remove outliers #########################################
+
 
 ############### standardize, remove variables with NZV ##################
 
-standardized <- preProcess(df, method=c("center", "scale","nzv")) # see also "corr"
+standardized <- preProcess(train_data, method=c("center", "scale","nzv")) # see also "corr"
 
-df <- predict(standardized, df)
+train_data <- predict(standardized, train_data)
+valid_data <- predict(standardized, train_data)
+test_data  <- predict(standardized, train_data)
 
-############### Remove correlated variables ##############################
 
-#correlations <- preProcess(df, method=c("corr"))
 
-remove_cor <- df %>% 
-  select_if(is.numeric) %>% 
-  drop_na() %>% 
-  cor() %>% 
-  findCorrelation(cutoff = .95)
 
-df <- df %>% select(-remove_cor)
-
-# split data
 
 
 
