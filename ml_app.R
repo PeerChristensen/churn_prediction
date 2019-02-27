@@ -3,7 +3,6 @@ library(tidyverse)
 library(caret)
 library(mice)
 library(lubridate)
-library(varhandle)
 
 df <- read_csv("Telecom_customer_churn.csv")
 
@@ -42,15 +41,15 @@ df <- df %>% select_if(function(x) !is.Date(x))
 
 #correlations <- preProcess(df, method=c("corr"))
 
-if (df %>% map(is.numeric) %>% unlist() %>% sum() > 1) {
-  remove_cor <- df %>% 
-    select_if(is.numeric) %>% 
-    drop_na() %>% 
-    cor() %>% 
-    findCorrelation(cutoff = .95)
-  
-  df <- df %>% select(-remove_cor)
-}
+# if (df %>% map(is.numeric) %>% unlist() %>% sum() > 1) {
+#   remove_cor <- df %>% 
+#     select_if(is.numeric) %>% 
+#     drop_na() %>% 
+#     cor() %>% 
+#     findCorrelation(cutoff = .95) # doesn't work as expected
+#   
+#   df <- df %>% select(-remove_cor)
+# }
 
 ############### Impute data #############################################
 
@@ -90,6 +89,24 @@ test_data  <- predict(standardized, train_data)
 
 
 
+#num_cols <- df %>%
+#  select_if(is.numeric)
+  
+#num_cols_keep <- num_cols[,!apply(m,2,function(x) any(x > 0.9))]
 
+#remove_cols <- setdiff(names(num_cols),names(num_cols_keep))
 
+m=df %>% 
+  select_if(is.numeric) %>%
+  drop_na() %>%
+  cor() 
 
+m[upper.tri(m)] <- 0
+diag(m) <- 0
+
+x <- abs(m) > .95
+
+whichKeep <- names(which(rowSums(lower.tri(x) * x) == 0))
+
+#df <- df %>% select_if(!is.numeric) select(!is.numeric,whichKeep)
+df <- df %>% select_if(function(x) !is.numeric(x)) %>% add_column(df[,whichKeep])
