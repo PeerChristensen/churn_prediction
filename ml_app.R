@@ -20,7 +20,7 @@ df = data.frame(df[,na_cols], churn = df$churn)
 ############### Detect, change, remove variables by type ###############
 
 # change to numeric
-df <- lapply(df, function(col) {
+df <- map_df(df, function(col) {
   
   if (suppressWarnings(all(!is.na(as.numeric(as.character(col)))))) {
     as.numeric(as.character(col))
