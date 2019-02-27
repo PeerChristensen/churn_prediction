@@ -56,10 +56,8 @@ df <- df %>% select_if(function(x) !is.Date(x))
 # check number of NAs in each column
 df %>% map(is.na) %>% map(sum) %>% unlist()
 
-imp <- mice(data = df, print = TRUE,maxit=2) # default maxit is 5, make sure cust id is removed
-df_impute <- complete(imp, "long")
-df_impute <- df_impute %>% select(-.imp,-.id)
-
+imp <- mice(data = df, print = TRUE,maxit=1) # default maxit is 5, make sure cust id is removed
+df_impute <- mice::complete(imp)
 
 ############### Partition data #########################################
 
@@ -86,9 +84,6 @@ train_data <- predict(standardized, train_data)
 valid_data <- predict(standardized, train_data)
 test_data  <- predict(standardized, train_data)
 
-
-
-
 #num_cols <- df %>%
 #  select_if(is.numeric)
   
@@ -110,3 +105,15 @@ whichKeep <- names(which(rowSums(lower.tri(x) * x) == 0))
 
 #df <- df %>% select_if(!is.numeric) select(!is.numeric,whichKeep)
 df <- df %>% select_if(function(x) !is.numeric(x)) %>% add_column(df[,whichKeep])
+df <- df %>% select_if(function(x) !is.numeric(x)) %>% cbind(df[,whichKeep])
+
+# anomaly detection
+prostate_path = system.file("extdata", "prostate.csv", package = "h2o")
+prostate = h2o.importFile(path = prostate_path)
+prostate_dl = h2o.deeplearning(y = CAPSULE, training_frame = prostate, autoencoder = TRUE,
+                               hidden = c(10, 10), epochs = 5)
+prostate_anon = h2o.anomaly(prostate_dl, prostate)
+pro <- as.data.frame(prostate_anon)
+pro %>% ggplot(aes(Reconstruction.MSE)) + geom_density()
+prostate <- prostate %>% as.data.frame() %>% add_column(pro$Reconstruction.MSE)
+prostate <- prostate %>% filter(pro$Reconstruction.MSE < .2)
