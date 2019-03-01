@@ -39,17 +39,17 @@ df <- df %>% select_if(function(x) !is.Date(x))
 
 ############### Remove correlated variables ##############################
 
-#correlations <- preProcess(df, method=c("corr"))
+correlations <- preProcess(df, method=c("corr"))
 
-# if (df %>% map(is.numeric) %>% unlist() %>% sum() > 1) {
-#   remove_cor <- df %>% 
-#     select_if(is.numeric) %>% 
-#     drop_na() %>% 
-#     cor() %>% 
-#     findCorrelation(cutoff = .95) # doesn't work as expected
-#   
-#   df <- df %>% select(-remove_cor)
-# }
+ if (df %>% map(is.numeric) %>% unlist() %>% sum() > 1) {
+   remove_cor <- df %>% 
+     select_if(is.numeric) %>% 
+     drop_na() %>% 
+     cor() %>% 
+     findCorrelation(cutoff = .95) # doesn't work as expected
+   
+   df <- df %>% select(-remove_cor)
+ }
 
 ############### Impute data #############################################
 
@@ -84,12 +84,12 @@ train_data <- predict(standardized, train_data)
 valid_data <- predict(standardized, train_data)
 test_data  <- predict(standardized, train_data)
 
-#num_cols <- df %>%
-#  select_if(is.numeric)
+num_cols <- df %>%
+  select_if(is.numeric)
   
-#num_cols_keep <- num_cols[,!apply(m,2,function(x) any(x > 0.9))]
+num_cols_keep <- num_cols[,!apply(m,2,function(x) any(x > 0.9))]
 
-#remove_cols <- setdiff(names(num_cols),names(num_cols_keep))
+remove_cols <- setdiff(names(num_cols),names(num_cols_keep))
 
 m=df %>% 
   select_if(is.numeric) %>%
@@ -110,10 +110,10 @@ df <- df %>% select_if(function(x) !is.numeric(x)) %>% cbind(df[,whichKeep])
 # anomaly detection
 prostate_path = system.file("extdata", "prostate.csv", package = "h2o")
 prostate = h2o.importFile(path = prostate_path)
-prostate_dl = h2o.deeplearning(y = CAPSULE, training_frame = prostate, autoencoder = TRUE,
+prostate_dl = h2o.deeplearning(x = 1:nrow(prostate),training_frame = prostate, autoencoder = TRUE,
                                hidden = c(10, 10), epochs = 5)
 prostate_anon = h2o.anomaly(prostate_dl, prostate)
 pro <- as.data.frame(prostate_anon)
 pro %>% ggplot(aes(Reconstruction.MSE)) + geom_density()
-prostate <- prostate %>% as.data.frame() %>% add_column(pro$Reconstruction.MSE)
+prostate <- prostate %>% as.data.frame() %>% add_column(k=pro$Reconstruction.MSE)
 prostate <- prostate %>% filter(pro$Reconstruction.MSE < .2)
