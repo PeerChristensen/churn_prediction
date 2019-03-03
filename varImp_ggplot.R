@@ -1,6 +1,7 @@
 # variable importance with ggplot
 
-varImp_ggplot <- function(H2OAutoML_object, save_pngs = F, return_data = F) {
+
+varImp_ggplot2 <- function(H2OAutoML_object, save_pngs = F, return_data = F) {
   
   model <- as.vector(as.character(H2OAutoML_object@leaderboard$model_id)) %>% 
     map(h2o.getModel) %>% .[[1]]
@@ -19,7 +20,7 @@ varImp_ggplot <- function(H2OAutoML_object, save_pngs = F, return_data = F) {
     
     p1 <-metaLearner_df %>%
       ggplot(aes(x=reorder(names,standardized_coefficients),standardized_coefficients, fill = factor(order))) +
-        geom_col() +
+      geom_col() +
       coord_flip() +
       scale_fill_viridis_d(guide=F) +
       labs(x= "Models", y = "Standard. coefficients") +
@@ -29,7 +30,7 @@ varImp_ggplot <- function(H2OAutoML_object, save_pngs = F, return_data = F) {
             axis.text  = element_text(size = 12))
     
     print(p1)
-      
+    
     if (save_pngs == T) {
       ggsave("modelImp.png")
     }
@@ -45,17 +46,33 @@ varImp_ggplot <- function(H2OAutoML_object, save_pngs = F, return_data = F) {
     varImp <- h2o.varimp(model)
   }
   
-  p2 <- varImp %>%
-    ggplot(aes(x=reorder(names,coefficients),coefficients, fill = factor(sign))) +
-    geom_col() +
-    coord_flip() +
-    scale_fill_viridis_d("Sign") +
-    labs(x= "Variables", y = "Coefficients") +
-    ggtitle(glue::glue("Variable importance for {metaLearner_df$names[1]}")) +
-    theme(plot.title = element_text(size = 16),
-          axis.title = element_text(size = 12),
-          axis.text  = element_text(size = 12))
-  
+  if (model@algorithm == "glm") {
+    
+    p2 <- varImp %>%
+      ggplot(aes(x=reorder(names,coefficients),coefficients, fill = factor(sign))) +
+      geom_col() +
+      coord_flip() +
+      scale_fill_viridis_d("Sign") +
+      labs(x= "Variables", y = "Coefficients") +
+      ggtitle(paste("Variable importance for", model@algorithm, "model")) +
+      theme_light() +
+      theme(plot.title = element_text(size = 16),
+            axis.title = element_text(size = 12),
+            axis.text  = element_text(size = 12))
+    
+  } else {
+    p2 <- varImp %>%
+      ggplot(aes(x=reorder(variable,scaled_importance ),scaled_importance, fill = scaled_importance)) + #fill = factor(sign)
+      geom_col() +
+      coord_flip() +
+      scale_fill_viridis_d(guide = FALSE) +
+      labs(x= "Variables", y = "Coefficients") +
+      ggtitle(paste("Variable importance for", model@algorithm, "model")) +
+      theme_light() +
+      theme(plot.title = element_text(size = 16),
+            axis.title = element_text(size = 12),
+            axis.text  = element_text(size = 12))
+  }
   print(p2)
   
   if (save_pngs == T) {
@@ -66,4 +83,3 @@ varImp_ggplot <- function(H2OAutoML_object, save_pngs = F, return_data = F) {
     return(list(modelImp,varImp))
   }
 }
-
