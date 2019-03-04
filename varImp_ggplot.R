@@ -49,6 +49,7 @@ varImp_ggplot2 <- function(H2OAutoML_object, save_pngs = F, return_data = F) {
   if (model@algorithm == "glm") {
     
     p2 <- varImp %>%
+      drop_na() %>%
       ggplot(aes(x=reorder(names,coefficients),coefficients, fill = factor(sign))) +
       geom_col() +
       coord_flip() +
@@ -62,7 +63,7 @@ varImp_ggplot2 <- function(H2OAutoML_object, save_pngs = F, return_data = F) {
     
   } else {
     p2 <- varImp %>%
-      ggplot(aes(x=reorder(variable,scaled_importance ),scaled_importance, fill = scaled_importance)) + #fill = factor(sign)
+      ggplot(aes(x=reorder(variable,scaled_importance),scaled_importance, fill = scaled_importance)) +
       geom_col() +
       coord_flip() +
       scale_fill_viridis_d(guide = FALSE) +

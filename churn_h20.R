@@ -54,7 +54,7 @@ df %>%
   scale_fill_tableau()
 
 df <- df %>%
-  select(-customerID)
+  dplyr::select(-customerID)
 
 # missing data
 md.pattern(df, plot = T)
@@ -118,6 +118,7 @@ aml <- h2o.automl(x = features,
                   y = response,
                   training_frame = train_hf,
                   validation_frame = valid_hf,
+                  leaderboard_frame = test_hf,
                   balance_classes = TRUE,
                   max_runtime_secs = 20)
 

@@ -16,12 +16,12 @@ df <- createDummyFeatures(df, target = "Churn")
 
 write_csv(df,"telecom_churn_prep.csv")
 
-index <- createDataPartition(df$Churn, p = 0.7, list = FALSE)
+index <- createDataPartition(df$churn, p = 0.7, list = FALSE)
 
 train_data <- df[index, ]
 val_test_data  <- df[-index, ]
 
-index2 <- createDataPartition(val_test_data$Churn, p = 0.5, list = FALSE)
+index2 <- createDataPartition(val_test_data$churn, p = 0.5, list = FALSE)
 
 valid_data <- val_test_data[-index2, ]
 test_data  <- val_test_data[index2, ]
