@@ -120,7 +120,7 @@ aml <- h2o.automl(x = features,
                   validation_frame = valid_hf,
                   leaderboard_frame = test_hf,
                   balance_classes = TRUE,
-                  max_runtime_secs = 20)
+                  max_runtime_secs = 300)
 
 # View the AutoML Leaderboard
 lb <- aml@leaderboard
