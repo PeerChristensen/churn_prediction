@@ -13,7 +13,7 @@ library(tibble)    # add_column function
 library(stringi)   # joining strings in output
 library(mlr)       # remove vars with near-zero variance 
 
-############### Read the data ######################################
+############### Read the data #####################################
 
 df <- read.Alteryx("#1", mode="data.frame")
 
